@@ -33,7 +33,20 @@ def is_parent(parent, child):
 
 
 def should_skip(path):
-    return any(os.path.commonpath([path, skip]) == skip for skip in SKIP_FOLDERS)
+    path_drive = os.path.splitdrive(path)[0]
+
+    for skip in SKIP_FOLDERS:
+        skip_drive = os.path.splitdrive(skip)[0]
+
+        # Only compare if drives match
+        if path_drive == skip_drive:
+            try:
+                if os.path.commonpath([path, skip]) == skip:
+                    return True
+            except ValueError:
+                continue
+
+    return False
 
 
 # ---------------- SIZE FUNCTION ----------------
