@@ -162,8 +162,7 @@ def scan_deep_critical(target_path):
 
 
 # ---------------- MAIN MENU ----------------
-def main():
-    target_path = input("Enter target directory path: ").strip()
+def main(): 
 
     while True:
         print("\nSelect Scan Mode:")
@@ -174,9 +173,11 @@ def main():
         choice = input("Enter choice (1/2/3): ").strip()
 
         if choice == "1":
+            target_path = input("Enter target directory path: ").strip()
             scan_general(target_path)
 
         elif choice == "2":
+            target_path = input("Enter target directory path: ").strip()
             scan_deep_critical(target_path)
 
         elif choice == "3":
