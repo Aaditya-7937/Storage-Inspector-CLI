@@ -104,18 +104,26 @@ def scan_general(target_path):
 
 
 # ---------------- DEEP CRITICAL SCAN ----------------
-def scan_deep_critical(target_path):
+def scan_deep_critical(target_path, show_logs=True):
     print(f"\nScanning (Deep Critical Only): {target_path}\n" + "-" * 50)
 
     critical = []
 
+    if show_logs:
+        print(f"{Style.DIM}Starting deep scan with threshold {CRITICAL_SIZE} GB...")
+
     # Step 1: collect all critical folders
     for root, dirs, files in os.walk(target_path):
+        if show_logs:
+            print(f"{Style.DIM}Walking: {root}")
+
         for d in dirs:
             full_path = os.path.join(root, d)
 
             # Skip system folders
             if should_skip(full_path):
+                if show_logs:
+                    print(f"{Style.DIM}Skipped system folder: {full_path}")
                 continue
 
             try:
@@ -128,8 +136,20 @@ def scan_deep_critical(target_path):
                     else:
                         critical.append(("NORMAL", full_path, size_gb))
 
-            except (PermissionError, OSError):
+                    if show_logs:
+                        print(f"{Style.DIM}Found candidate: {full_path} --> {size_gb:.2f} GB")
+
+            except PermissionError:
+                if show_logs:
+                    print(f"{Style.DIM}Permission denied: {full_path}")
                 continue
+            except OSError:
+                if show_logs:
+                    print(f"{Style.DIM}OS error reading: {full_path}")
+                continue
+
+    if show_logs:
+        print(f"{Style.DIM}Collected {len(critical)} candidate folders")
 
     # Step 2: remove parent folders if child exists
     filtered = []
@@ -144,6 +164,9 @@ def scan_deep_critical(target_path):
 
         if not is_parent_flag:
             filtered.append((tag1, path1, size1))
+
+    if show_logs:
+        print(f"{Style.DIM}Filtered parent folders, {len(filtered)} final entries remain")
 
     # Step 3: sort descending
     filtered.sort(key=lambda x: x[2], reverse=True)
@@ -162,8 +185,7 @@ def scan_deep_critical(target_path):
 
 
 # ---------------- MAIN MENU ----------------
-def main():
-    target_path = input("Enter target directory path: ").strip()
+def main(): 
 
     while True:
         print("\nSelect Scan Mode:")
@@ -174,9 +196,11 @@ def main():
         choice = input("Enter choice (1/2/3): ").strip()
 
         if choice == "1":
+            target_path = input("Enter target directory path: ").strip()
             scan_general(target_path)
 
         elif choice == "2":
+            target_path = input("Enter target directory path: ").strip()
             scan_deep_critical(target_path)
 
         elif choice == "3":
